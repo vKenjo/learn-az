@@ -31,4 +31,5 @@ export const COLORS = {
   correct: '#4cc9f0',
   incorrect: '#f72585',
   warning: '#ffc107',
+  orange: '#fb8500',
 } as const;

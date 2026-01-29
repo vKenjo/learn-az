@@ -11,6 +11,8 @@ interface Props {
     canNext: boolean;
     canPrevious: boolean;
     onFinish?: () => void;
+    onToggleBookmark?: () => void;
+    isBookmarked?: boolean;
 }
 
 export function QuestionNavigator({
@@ -20,7 +22,9 @@ export function QuestionNavigator({
     onNext,
     canNext,
     canPrevious,
-    onFinish
+    onFinish,
+    onToggleBookmark,
+    isBookmarked
 }: Props) {
     const isLast = currentIndex === totalQuestions - 1;
 
@@ -40,6 +44,16 @@ export function QuestionNavigator({
             <Text className="text-text-secondary">
                 {currentIndex + 1} <Text className="text-text-muted">/ {totalQuestions}</Text>
             </Text>
+
+            {onToggleBookmark && (
+                <TouchableOpacity onPress={onToggleBookmark} className="mx-2">
+                    <Ionicons
+                        name={isBookmarked ? "bookmark" : "bookmark-outline"}
+                        size={24}
+                        color={isBookmarked ? COLORS.pink.hot : COLORS.text.secondary}
+                    />
+                </TouchableOpacity>
+            )}
 
             {isLast && onFinish ? (
                 <Button

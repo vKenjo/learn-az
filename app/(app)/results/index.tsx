@@ -65,6 +65,10 @@ export default function Results() {
                         title="Review Questions"
                         variant="secondary"
                         icon={<Ionicons name="list" size={20} color="white" />}
+                        onPress={() => router.push({
+                            pathname: "/(app)/exam/[examId]/review",
+                            params: { examId: "AZ-900", sessionId: "mock-session-id" } // TODO: pass real session ID
+                        })}
                     />
                     <Button
                         title="Back to Dashboard"

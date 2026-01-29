@@ -275,17 +275,13 @@ lib/
 
 ### 4.1 Core Features Matrix
 
-| Feature | Learn Mode | Mock Exam | Timed Exam |
-|---------|:----------:|:---------:|:----------:|
-| Question display | ✅ | ✅ | ✅ |
-| Immediate feedback | ✅ | ❌ | ❌ |
-| Explanation shown | After each Q | End only | End only |
-| Timer visible | ❌ | Optional | ✅ Required |
-| Question navigation | Sequential | Free nav | Free nav |
-| Flag for review | ❌ | ✅ | ✅ |
-| Submit early | N/A | ✅ | ✅ |
-| Pause allowed | N/A | ✅ | ❌ |
-| Score breakdown | Per question | At end | At end |
+| Feature | Description | Status |
+| :--- | :--- | :--- |
+| **Auth** | User accounts via Convex Auth | [x] |
+| **Exams** | Learn, Mock, & Timed Modes | [x] |
+| **Content** | Single Choice, Multi, D&D, Hotspot | [x] |
+| **Stats** | Charts & Weak Areas | [x] |
+| **Admin** | Add Question Interface | [x] |
 
 ### 4.2 User Flow Diagram
 
@@ -351,6 +347,7 @@ interface SingleChoiceQuestion {
 ```
 
 **UI Behavior**:
+
 - Radio button selection
 - One selection allowed at a time
 - Selected option highlighted with gradient border
@@ -379,6 +376,7 @@ interface MultipleChoiceQuestion {
 ```
 
 **UI Behavior**:
+
 - Checkbox selection
 - Display required selection count prominently
 - Visual counter: "Selected: 2/3"
@@ -413,6 +411,7 @@ interface DragDropQuestion {
 ```
 
 **UI Behavior**:
+
 - Smooth drag animations (react-beautiful-dnd or dnd-kit)
 - Visual drop zones with highlight on hover
 - Snap-to-place animation
@@ -446,6 +445,7 @@ interface FillInBlankQuestion {
 ```
 
 **UI Behavior**:
+
 - Inline dropdown selectors styled to match theme
 - Clear visual indication of blanks
 - Selected values shown inline
@@ -484,6 +484,7 @@ interface CaseStudyQuestion {
 ```
 
 **UI Behavior**:
+
 - Split view: Scenario on left/top, questions on right/bottom
 - Collapsible scenario sections
 - Tabs for different scenario sections (Overview, Environment, Requirements)
@@ -517,6 +518,7 @@ interface TrueFalseQuestion {
 ```
 
 **UI Behavior**:
+
 - Two-column layout: Statement | Yes/No toggle
 - Toggle switches or segmented control
 - Each row independent
@@ -584,6 +586,7 @@ interface TrueFalseQuestion {
 | Exit | Save progress, return to dashboard |
 
 **Progress Persistence**:
+
 - Save after each question
 - Track: question ID, user answer, correct/incorrect, time spent
 - Resume from last unanswered question
@@ -637,6 +640,7 @@ interface TrueFalseQuestion {
 | Review mode | After submit, can review each Q with explanations |
 
 **Post-Exam Review Screen**:
+
 - Overall score (X/1000 scale)
 - Pass/Fail indicator (700 = pass)
 - Domain breakdown bar chart
@@ -686,6 +690,7 @@ interface TrueFalseQuestion {
 | 0:00 | Auto-submit exam |
 
 **Strict Rules**:
+
 - NO pausing allowed
 - Tab/window switch detection → warning
 - Auto-save every 30 seconds
@@ -725,6 +730,7 @@ process.stdout.write("\n");
 ```
 
 Run it:
+
 ```bash
 node generateKeys.mjs
 ```

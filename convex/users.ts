@@ -53,6 +53,7 @@ export const upsertProfile = mutation({
             currentStreak: 0,
             longestStreak: 0,
             lastActiveDate: new Date().toISOString().split("T")[0],
+            achievements: [],
             createdAt: Date.now(),
         });
     },
@@ -60,7 +61,7 @@ export const upsertProfile = mutation({
 
 // Internal mutation to create profile on first sign-up
 export const createProfileOnSignUp = internalMutation({
-    args: { userId: v.id("users"), email: v.string(), name: v.optional(v.string()) },
+    args: { userId: v.id("users"), email: v.optional(v.string()), name: v.optional(v.string()) },
     handler: async (ctx, args) => {
         const existing = await ctx.db
             .query("userProfiles")
@@ -76,8 +77,51 @@ export const createProfileOnSignUp = internalMutation({
                 currentStreak: 0,
                 longestStreak: 0,
                 lastActiveDate: new Date().toISOString().split("T")[0],
+                achievements: [],
                 createdAt: Date.now(),
             });
         }
+    },
+});
+
+// Update streak logic
+export const updateStreak = mutation({
+    args: {},
+    handler: async (ctx) => {
+        const userId = await auth.getUserId(ctx);
+        if (!userId) return null;
+
+        const profile = await ctx.db
+            .query("userProfiles")
+            .withIndex("by_user_id", (q) => q.eq("userId", userId))
+            .unique();
+
+        if (!profile) return;
+
+        const today = new Date().toISOString().split("T")[0];
+        const lastActive = profile.lastActiveDate;
+
+        if (lastActive === today) {
+            return; // Already active today
+        }
+
+        const yesterday = new Date(Date.now() - 86400000).toISOString().split("T")[0];
+        let newStreak = profile.currentStreak;
+
+        if (lastActive === yesterday) {
+            newStreak += 1;
+        } else {
+            newStreak = 1; // Missed a day (or more), reset to 1
+        }
+
+        const newLongest = Math.max(profile.longestStreak, newStreak);
+
+        await ctx.db.patch(profile._id, {
+            currentStreak: newStreak,
+            longestStreak: newLongest,
+            lastActiveDate: today,
+        });
+
+        return { streak: newStreak, longest: newLongest };
     },
 });

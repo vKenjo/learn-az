@@ -1,102 +1,186 @@
-import { QuestionNavigator } from '@/components/exam/QuestionNavigator';
-import { SingleChoice } from '@/components/questions/SingleChoice';
+import QuestionNavigator from '@/components/exam/QuestionNavigator';
+import SingleChoice from '@/components/questions/SingleChoice';
 import { Button } from '@/components/ui/Button';
+import { COLORS } from '@/constants/theme';
 import { api } from '@/convex/_generated/api';
+import { Ionicons } from '@expo/vector-icons';
 import { useMutation } from 'convex/react';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Alert, ScrollView, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-export default function MockExam() {
+// Mock data fallback
+const MOCK_QUESTION = {
+    _id: "mock-1",
+    type: "single-choice",
+    content: {
+        question: "Which Azure service is best for serverless computing?",
+        options: ["Azure VMs", "Azure Functions", "Azure Kubernetes Service", "Azure App Service"],
+        correctIndex: 1,
+    },
+    explanation: "Azure Functions is the serverless compute service."
+};
+
+export default function MockExamMode() {
     const { examId } = useLocalSearchParams();
     const router = useRouter();
 
+    // State
     const [sessionId, setSessionId] = useState<any>(null);
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
     const [answers, setAnswers] = useState<Record<string, any>>({});
+    const [timeLeft, setTimeLeft] = useState(60 * 60); // Default 60 mins
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
+    // API
     const startSession = useMutation(api.exams.startSession);
     const submitAnswer = useMutation(api.exams.submitAnswer);
+    const completeSession = useMutation(api.exams.completeSession);
 
+    // We'll mock the question data for now as before
+    const currentQuestion = MOCK_QUESTION;
+    const totalQuestions = 40; // Mock exam standard
+
+    // Timer
+    useEffect(() => {
+        if (!sessionId) return;
+
+        const timer = setInterval(() => {
+            setTimeLeft((prev) => {
+                if (prev <= 1) {
+                    clearInterval(timer);
+                    handleFinish(); // Auto submit
+                    return 0;
+                }
+                return prev - 1;
+            });
+        }, 1000);
+
+        return () => clearInterval(timer);
+    }, [sessionId]);
+
+    // Start Session
     useEffect(() => {
         if (examId && !sessionId) {
             startSession({
                 examCode: examId as any,
                 mode: 'mock',
                 questionCount: 40,
-            }).then(setSessionId).catch(err => Alert.alert("Error", err.message));
+                timeLimitMinutes: 60,
+            }).then((id) => {
+                setSessionId(id);
+            }).catch(err => Alert.alert("Error", err.message));
         }
     }, [examId]);
 
-    // Mock Data reuse (replace with fetch)
-    const currentQuestion = {
-        _id: "mock-1",
-        type: "single-choice",
-        content: {
-            question: "Which Azure service is best for serverless computing?",
-            options: ["Azure VMs", "Azure Functions", "Azure Kubernetes Service", "Azure App Service"],
-            correctIndex: 1, // Hidden in mock mode usually until end
-        },
-        explanation: "..."
+    const formatTime = (seconds: number) => {
+        const mins = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        return `${mins}:${secs.toString().padStart(2, '0')}`;
     };
-
-    const totalQuestions = 40;
 
     const handleSelectAnswer = (answer: any) => {
         setAnswers(prev => ({ ...prev, [currentQuestionIndex]: answer }));
+
+        // In mock mode, we silently submit or just store local
+        // For robustness, let's submit silently so progress is saved
+        if (sessionId) {
+            submitAnswer({
+                sessionId,
+                questionId: currentQuestion._id as any,
+                userAnswer: answer,
+                timeSpentSeconds: 0, // We could track per question but for now 0
+            });
+        }
     };
 
     const handleNext = () => {
-        // Save answer
-        submitAnswer({
-            sessionId,
-            questionId: currentQuestion._id as any,
-            userAnswer: answers[currentQuestionIndex],
-            timeSpentSeconds: 30, // Mock time
-        });
-
-        setCurrentQuestionIndex(prev => prev + 1);
+        if (currentQuestionIndex < totalQuestions - 1) {
+            setCurrentQuestionIndex(prev => prev + 1);
+        }
     };
 
     const handlePrev = () => {
         setCurrentQuestionIndex(prev => Math.max(0, prev - 1));
     };
 
-    const handleFinish = () => {
-        // Submit final answer if needed
-        // Then router.push result page
-        router.push("/(app)/results");
+    const handleFinish = async () => {
+        if (isSubmitting) return;
+
+        Alert.alert(
+            "Submit Exam",
+            "Are you sure you want to finish?",
+            [
+                { text: "Cancel", style: "cancel" },
+                {
+                    text: "Submit",
+                    style: "destructive",
+                    onPress: async () => {
+                        setIsSubmitting(true);
+                        try {
+                            if (sessionId) {
+                                await completeSession({ sessionId });
+                                router.replace({
+                                    pathname: "/(app)/results",
+                                    params: { sessionId }
+                                });
+                            }
+                        } catch (error: any) {
+                            Alert.alert("Error", error.message);
+                            setIsSubmitting(false);
+                        }
+                    }
+                }
+            ]
+        );
     };
 
-    if (!sessionId) return <View className="flex-1 bg-bg-primary" />;
+    if (!sessionId) {
+        return (
+            <View className="flex-1 justify-center items-center bg-bg-primary">
+                <ActivityIndicator size="large" color={COLORS.pink.hot} />
+                <Text className="text-white mt-4">Preparing your exam...</Text>
+            </View>
+        );
+    }
 
     return (
         <SafeAreaView className="flex-1 bg-bg-primary">
-            <View className="px-4 py-2 border-b border-white/5 flex-row justify-between items-center">
-                <Text className="text-text-secondary">Mock Exam: {examId}</Text>
-                <Button title="Pause" size="sm" variant="ghost" />
+            {/* Header with Timer */}
+            <View className="px-4 py-3 border-b border-white/5 flex-row justify-between items-center bg-bg-secondary">
+                <View className="flex-row items-center">
+                    <Ionicons name="time-outline" size={20} color={timeLeft < 300 ? COLORS.error : COLORS.text.primary} />
+                    <Text className={`ml-2 font-mono font-bold text-lg ${timeLeft < 300 ? 'text-red-500' : 'text-white'}`}>
+                        {formatTime(timeLeft)}
+                    </Text>
+                </View>
+                <Button title="Finish Exam" size="sm" variant="outline" onPress={handleFinish} />
             </View>
 
-            <ScrollView className="flex-1 px-4 py-6">
-                {currentQuestion.type === 'single-choice' && (
-                    <SingleChoice
-                        question={currentQuestion}
-                        selectedOption={answers[currentQuestionIndex]}
-                        onSelectOption={handleSelectAnswer}
-                        showFeedback={false}
-                    />
-                )}
-            </ScrollView>
+            {/* Question Area */}
+            <View className="flex-1 px-4 py-6">
+                <View className="flex-row justify-between mb-4">
+                    <Text className="text-text-secondary">Question {currentQuestionIndex + 1} of {totalQuestions}</Text>
+                    <Text className="text-text-muted text-xs uppercase">{currentQuestion.type}</Text>
+                </View>
 
+                <SingleChoice
+                    question={currentQuestion.content}
+                    selectedAnswer={answers[currentQuestionIndex]}
+                    onSelect={handleSelectAnswer}
+                    disabled={false} // Always enabled in mock mode until finished
+                    showResult={false} // Never show result in mock mode
+                />
+            </View>
+
+            {/* Navigator */}
             <QuestionNavigator
-                currentIndex={currentQuestionIndex}
-                totalQuestions={totalQuestions}
-                onPrevious={handlePrev}
+                currentIndex={currentQuestionIndex + 1}
+                total={totalQuestions}
                 onNext={handleNext}
-                canPrevious={currentQuestionIndex > 0}
-                canNext={currentQuestionIndex < totalQuestions - 1}
-                onFinish={currentQuestionIndex === totalQuestions - 1 ? handleFinish : undefined}
+                onPrev={handlePrev}
+                onFinish={handleFinish} // Should trigger confirm
             />
         </SafeAreaView>
     );

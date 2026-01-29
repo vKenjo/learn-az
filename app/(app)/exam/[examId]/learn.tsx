@@ -8,6 +8,19 @@ import { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import CaseStudyView from '@/components/exam/CaseStudyView';
+
+const MOCK_QUESTION = {
+    _id: "mock-1",
+    type: "single-choice",
+    content: {
+        question: "Which Azure service is best for serverless computing?",
+        options: ["Azure VMs", "Azure Functions", "Azure Kubernetes Service", "Azure App Service"],
+        correctIndex: 1,
+    },
+    explanation: "Azure Functions is the serverless compute service."
+};
+
 export default function LearnMode() {
     const { examId } = useLocalSearchParams();
     const router = useRouter();
@@ -18,9 +31,18 @@ export default function LearnMode() {
     const [answers, setAnswers] = useState<Record<string, any>>({});
     const [checkResult, setCheckResult] = useState<any>(null);
 
+    // MOCK DATA FOR UI DEV until backend is fully wired with data
+    const currentQuestion = MOCK_QUESTION; // Replace with real data fetch
+    const totalQuestions = 10; // query from session
+
     // API
     const startSession = useMutation(api.exams.startSession);
     const submitAnswer = useMutation(api.exams.submitAnswer);
+    const toggleBookmark = useMutation(api.bookmarks.toggleBookmark);
+
+    // We need to know the question ID for the hook, but if currentQuestion is not yet ready, we pass "skip" or null check inside.
+    const currentQuestionId = (currentQuestion as any)._id;
+    const isBookmarked = useQuery(api.bookmarks.isBookmarked, { questionId: currentQuestionId });
 
     // Helper to load session questions (in real app, we'd query questions by session)
     // But for now, we rely on the session creation to give us IDs, 
@@ -32,15 +54,7 @@ export default function LearnMode() {
     // We'll assume we can fetch the current question by ID.
     // First, we need to get the session details to know the question IDs.
     const session = useQuery(api.exams.getSession, sessionId ? { sessionId } : "skip");
-    // Oops, I didn't create `getSession` API yet. I should add it to `exams.ts`.
-    // For now, I'll mock that logic or just fetch questions directly if I can.
-    // Actually, I should fix `exams.ts` to include `getSession`.
 
-    // PLAN B: Reuse `getQuestion` from `questions.ts` if I have the ID.
-    // But I don't have the ID until I get the session.
-    // The `startSession` returns `sessionId`.
-
-    // Let's implement `startSession` call on mount.
     useEffect(() => {
         if (examId && !sessionId) {
             startSession({
@@ -49,26 +63,7 @@ export default function LearnMode() {
                 questionCount: 10, // Default batch
             }).then(setSessionId).catch(err => Alert.alert("Error", err.message));
         }
-    }, [examId]);
-
-    // Query session to get question IDs
-    // I need to add `getSession` to `exams.ts`. I will do that in a follow up step.
-    // For now, I'll assume I have the IDs or just mock 1 question for UI dev.
-
-    // MOCK DATA FOR UI DEV until backend is fully wired with data
-    const mockQuestion = {
-        _id: "mock-1",
-        type: "single-choice",
-        content: {
-            question: "Which Azure service is best for serverless computing?",
-            options: ["Azure VMs", "Azure Functions", "Azure Kubernetes Service", "Azure App Service"],
-            correctIndex: 1,
-        },
-        explanation: "Azure Functions is the serverless compute service."
-    };
-
-    const currentQuestion = mockQuestion; // Replace with real data fetch
-    const totalQuestions = 10; // query from session
+    }, [examId, sessionId, startSession]);
 
     const handleSelectAnswer = (answer: any) => {
         if (checkResult) return; // Already checked
@@ -123,14 +118,22 @@ export default function LearnMode() {
                     />
                 </View>
 
-                {currentQuestion.type === 'single-choice' && (
+                {(currentQuestion as any).caseStudyId ? (
+                    <CaseStudyView
+                        caseStudyId={(currentQuestion as any).caseStudyId}
+                        question={currentQuestion}
+                        selectedAnswer={answers[currentQuestionIndex]}
+                        onSelectAnswer={handleSelectAnswer}
+                        showResult={!!checkResult}
+                    />
+                ) : (currentQuestion.type === 'single-choice' && (
                     <SingleChoice
                         question={currentQuestion}
                         selectedOption={answers[currentQuestionIndex]}
                         onSelectOption={handleSelectAnswer}
                         showFeedback={!!checkResult}
                     />
-                )}
+                ))}
                 {/* Add cases for other types */}
 
                 {!checkResult && (
@@ -149,7 +152,9 @@ export default function LearnMode() {
                 onPrevious={handlePrev}
                 onNext={handleNext}
                 canPrevious={currentQuestionIndex > 0}
-                canNext={currentQuestionIndex < totalQuestions - 1} // OR if we allow going to next without checking (depends on rules)
+                canNext={currentQuestionIndex < totalQuestions - 1}
+                onToggleBookmark={() => toggleBookmark({ questionId: currentQuestion._id as any })}
+                isBookmarked={!!isBookmarked}
             />
         </SafeAreaView>
     );

@@ -1,6 +1,31 @@
 import { v } from "convex/values";
-import { query } from "./_generated/server";
+import { mutation, query } from "./_generated/server";
 import { auth } from "./auth";
+
+// Create a new question (Admin)
+export const createQuestion = mutation({
+    args: {
+        domain: v.string(),
+        subdomain: v.string(),
+        difficulty: v.string(), // "Easy" | "Medium" | "Hard"
+        type: v.string(), // "SingleChoice" | "MultipleChoice"
+        content: v.string(),
+        options: v.array(v.string()),
+        correctAnswer: v.union(v.string(), v.array(v.string())),
+        explanation: v.string(),
+        examCode: v.optional(v.string()), // Optional override
+    },
+    handler: async (ctx, args) => {
+        // TODO: Add admin auth check here
+        const { examCode, ...rest } = args;
+        const questionId = await ctx.db.insert("questions", {
+            ...rest,
+            examCode: examCode || "AZ-900", // Default
+            isActive: true,
+        });
+        return questionId;
+    },
+});
 
 // Get questions for a study session
 export const getQuestionsForSession = query({

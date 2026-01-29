@@ -6,6 +6,22 @@ export default defineSchema({
     // Note: Convex Auth creates a "users" table automatically
     // We extend it with our custom fields via "userProfiles"
 
+    // Convex Auth Tables
+    users: defineTable({
+        name: v.optional(v.string()),
+        image: v.optional(v.string()),
+        email: v.optional(v.string()),
+        emailVerificationTime: v.optional(v.number()),
+        phone: v.optional(v.string()),
+        phoneVerificationTime: v.optional(v.number()),
+        isAnonymous: v.optional(v.boolean()),
+    }).index("email", ["email"]),
+
+    authSessions: defineTable({
+        userId: v.id("users"),
+        expirationTime: v.number(),
+    }).index("expirationTime", ["expirationTime"]),
+
     userProfiles: defineTable({
         userId: v.id("users"),  // References Convex Auth users table
         email: v.optional(v.string()),
@@ -26,6 +42,7 @@ export default defineSchema({
         currentStreak: v.number(),
         longestStreak: v.number(),
         lastActiveDate: v.string(),  // YYYY-MM-DD
+        achievements: v.array(v.string()), // Added achievements
 
         createdAt: v.number(),
     })
@@ -48,6 +65,7 @@ export default defineSchema({
         ),
         domain: v.string(),
         subdomain: v.optional(v.string()),
+        caseStudyId: v.optional(v.id("caseStudies")),
         difficulty: v.union(
             v.literal("easy"),
             v.literal("medium"),
@@ -69,6 +87,8 @@ export default defineSchema({
 
         // Admin
         isActive: v.boolean(),
+
+        // Metadata
         createdAt: v.number(),
         updatedAt: v.number(),
     })
