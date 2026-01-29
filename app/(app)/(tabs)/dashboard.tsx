@@ -20,7 +20,7 @@ export default function Dashboard() {
 
     // Fetch full user profile for streaks using the users API helper
     // We strictly need this to be defined for the streak card
-    const userProfile = useQuery(api.users.currentUser);
+    // userProfile is removed to resolve unused variable warning
     const updateStreak = useMutation(api.users.updateStreak);
 
     useEffect(() => {

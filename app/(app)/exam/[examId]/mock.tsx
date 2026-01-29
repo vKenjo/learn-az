@@ -1,5 +1,5 @@
-import QuestionNavigator from '@/components/exam/QuestionNavigator';
-import SingleChoice from '@/components/questions/SingleChoice';
+import { QuestionNavigator } from '@/components/exam/QuestionNavigator';
+import { SingleChoice } from '@/components/questions/SingleChoice';
 import { Button } from '@/components/ui/Button';
 import { COLORS } from '@/constants/theme';
 import { api } from '@/convex/_generated/api';
@@ -150,7 +150,7 @@ export default function MockExamMode() {
             {/* Header with Timer */}
             <View className="px-4 py-3 border-b border-white/5 flex-row justify-between items-center bg-bg-secondary">
                 <View className="flex-row items-center">
-                    <Ionicons name="time-outline" size={20} color={timeLeft < 300 ? COLORS.error : COLORS.text.primary} />
+                    <Ionicons name="time-outline" size={20} color={timeLeft < 300 ? COLORS.incorrect : COLORS.text.primary} />
                     <Text className={`ml-2 font-mono font-bold text-lg ${timeLeft < 300 ? 'text-red-500' : 'text-white'}`}>
                         {formatTime(timeLeft)}
                     </Text>
@@ -167,19 +167,20 @@ export default function MockExamMode() {
 
                 <SingleChoice
                     question={currentQuestion.content}
-                    selectedAnswer={answers[currentQuestionIndex]}
-                    onSelect={handleSelectAnswer}
-                    disabled={false} // Always enabled in mock mode until finished
-                    showResult={false} // Never show result in mock mode
+                    selectedOption={answers[currentQuestionIndex]}
+                    onSelectOption={handleSelectAnswer}
+                    showFeedback={false}
                 />
             </View>
 
             {/* Navigator */}
             <QuestionNavigator
-                currentIndex={currentQuestionIndex + 1}
-                total={totalQuestions}
+                currentIndex={currentQuestionIndex}
+                totalQuestions={totalQuestions}
                 onNext={handleNext}
-                onPrev={handlePrev}
+                onPrevious={handlePrev}
+                canNext={currentQuestionIndex < totalQuestions - 1}
+                canPrevious={currentQuestionIndex > 0}
                 onFinish={handleFinish} // Should trigger confirm
             />
         </SafeAreaView>

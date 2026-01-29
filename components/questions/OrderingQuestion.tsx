@@ -21,12 +21,21 @@ export const OrderingQuestion = ({ question, userAnswer, onAnswer, isReview = fa
     const [availableItems, setAvailableItems] = useState<string[]>([]);
 
     useEffect(() => {
-        if (!question.options) return;
+        const q = question as any;
+        if (!q.options) return;
 
         if (userAnswer) {
             // In review mode or if answer exists, we just show what was selected
             // and what is remaining (if any, though usually all would be selected)
-            const remaining = question.options.filter(opt => !userAnswer.includes(opt));
+            const q = question as any;
+            if (!q.options) return;
+
+            // Filter out items already in the user's answer so they aren't duplicates
+            // (Only relevant if we were dragging from a source list, but here we just have one list)
+            // Actually, for re-ordering, we often start with all items.
+            // Let's just use q.options directly if we haven't started.
+
+            const remaining = q.options.filter((opt: any) => !userAnswer.includes(opt));
             setAvailableItems(remaining);
             setSelectedOrder(userAnswer);
         } else {
@@ -34,7 +43,8 @@ export const OrderingQuestion = ({ question, userAnswer, onAnswer, isReview = fa
             // Options from DB are already shuffled/randomized ideally, or we shuffle here
             // But for ordering questions, typically the DB provides them in a random order
             // distinct from the correct answer.
-            setAvailableItems([...question.options]);
+            const q = question as any;
+            setAvailableItems([...q.options]);
             setSelectedOrder([]);
         }
     }, [question, userAnswer]);

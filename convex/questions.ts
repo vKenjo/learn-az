@@ -20,9 +20,14 @@ export const createQuestion = mutation({
         const { examCode, ...rest } = args;
         const questionId = await ctx.db.insert("questions", {
             ...rest,
-            examCode: examCode || "AZ-900", // Default
+            examCode: (examCode || "AZ-900") as any, // Default
+            createdAt: Date.now(),
+            timesAnswered: 0,
+            timesCorrect: 0,
+            averageTimeSeconds: 0,
+            updatedAt: Date.now(),
             isActive: true,
-        });
+        } as any);
         return questionId;
     },
 });

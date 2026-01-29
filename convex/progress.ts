@@ -15,7 +15,7 @@ export const getWeeklyActivity = query({
         // Fetch responses in this range
         const responses = await ctx.db
             .query("questionResponses")
-            .withIndex("by_user_id", (q) => q.eq("userId", userId))
+            .withIndex("by_user", (q) => q.eq("userId", userId))
             .filter((q) => q.gte(q.field("answeredAt"), start))
             .collect();
 
@@ -53,7 +53,7 @@ export const getWeakAreas = query({
         // Fetch all user responses
         const responses = await ctx.db
             .query("questionResponses")
-            .withIndex("by_user_id", (q) => q.eq("userId", userId))
+            .withIndex("by_user", (q) => q.eq("userId", userId))
             .take(500); // Limit analysis for perf
 
         if (responses.length === 0) return [];

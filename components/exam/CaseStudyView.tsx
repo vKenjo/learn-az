@@ -1,4 +1,4 @@
-import SingleChoice from '@/components/questions/SingleChoice';
+import { SingleChoice } from '@/components/questions/SingleChoice';
 import { api } from '@/convex/_generated/api';
 import { Id } from '@/convex/_generated/dataModel';
 import { useQuery } from 'convex/react';
@@ -73,9 +73,9 @@ export default function CaseStudyView({
                 <ScrollView>
                     <SingleChoice
                         question={question.content}
-                        selectedAnswer={selectedAnswer}
-                        onSelect={onSelectAnswer}
-                        showResult={showResult}
+                        selectedOption={selectedAnswer}
+                        onSelectOption={onSelectAnswer}
+                        showFeedback={showResult}
                     />
                 </ScrollView>
             </View>

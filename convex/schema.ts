@@ -179,7 +179,8 @@ export default defineSchema({
         wasSkipped: v.boolean(),
     })
         .index("by_session", ["sessionId"])
-        .index("by_user_question", ["userId", "questionId"]),
+        .index("by_user_question", ["userId", "questionId"])
+        .index("by_user", ["userId"]),
 
     // ========== PROGRESS TRACKING ==========
     userProgress: defineTable({

@@ -32,4 +32,29 @@ export const COLORS = {
   incorrect: '#f72585',
   warning: '#ffc107',
   orange: '#fb8500',
+  white: '#ffffff',
 } as const;
+
+export const Fonts = {
+  rounded: 'System',
+  mono: 'Courier',
+};
+
+export const Colors = {
+  light: {
+    text: '#11181C',
+    background: '#fff',
+    tint: COLORS.pink.hot,
+    icon: '#687076',
+    tabIconDefault: '#687076',
+    tabIconSelected: COLORS.pink.hot,
+  },
+  dark: {
+    text: '#ECEDEE',
+    background: COLORS.bg.primary,
+    tint: COLORS.white || '#fff',
+    icon: '#9BA1A6',
+    tabIconDefault: '#9BA1A6',
+    tabIconSelected: COLORS.white || '#fff',
+  },
+};

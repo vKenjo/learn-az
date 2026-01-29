@@ -21,7 +21,8 @@ export const HotspotQuestion = ({ question, userAnswer, onAnswer, isReview = fal
     // robust fallback if imageUrl is separate in schema (it is not currently, standardizing on options[0] or a new field would be good)
     // The plan said "Input field for Image URL" in Admin.
     // Let's assume we store the Image URL in `options[0]` for Hotspot types as a convention for now.
-    const imageUrl = question.options?.[0];
+    const q = question as any;
+    const imageUrl = q.options?.[0];
 
     const handlePress = (evt: any) => {
         if (isReview) return;
@@ -89,13 +90,13 @@ export const HotspotQuestion = ({ question, userAnswer, onAnswer, isReview = fal
                     )}
 
                     {/* Correct Answer Marker (Review Mode Only) */}
-                    {isReview && question.correctAnswer && (
+                    {isReview && q.correctAnswer && (
                         <View
                             className="absolute w-10 h-10 -ml-5 -mt-5 border-2 border-green-500 rounded-full bg-green-500/30 items-center justify-center"
                             // Assuming correctAnswer is stored as {x: number, y: number} or we parse it
                             style={{
-                                left: `${(question.correctAnswer as any).x}%`,
-                                top: `${(question.correctAnswer as any).y}%`
+                                left: `${q.correctAnswer.x}%`,
+                                top: `${q.correctAnswer.y}%`
                             }}
                         >
                             <Ionicons name="checkmark" size={24} color="white" />

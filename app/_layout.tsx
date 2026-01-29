@@ -5,7 +5,7 @@ import 'react-native-reanimated';
 import '../global.css';
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
-import { ConvexProviderWithAuth } from "@convex-dev/auth/react";
+import { ConvexAuthProvider } from "@convex-dev/auth/react";
 import { ConvexReactClient } from "convex/react";
 import * as SecureStore from "expo-secure-store";
 
@@ -25,7 +25,7 @@ export default function RootLayout() {
   const colorScheme = useColorScheme();
 
   return (
-    <ConvexProviderWithAuth client={convex} storage={secureStorage}>
+    <ConvexAuthProvider client={convex} storage={secureStorage}>
       <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
         <Stack>
           <Stack.Screen name="index" options={{ headerShown: false }} />
@@ -35,6 +35,6 @@ export default function RootLayout() {
         </Stack>
         <StatusBar style="auto" />
       </ThemeProvider>
-    </ConvexProviderWithAuth>
+    </ConvexAuthProvider>
   );
 }
