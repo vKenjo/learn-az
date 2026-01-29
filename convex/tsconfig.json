@@ -1,0 +1,20 @@
+{
+    "compilerOptions": {
+        "target": "ESNext",
+        "lib": [
+            "ES2021"
+        ],
+        "module": "ESNext",
+        "skipLibCheck": true,
+        "moduleResolution": "Bundler",
+        "allowSyntheticDefaultImports": true,
+        "strict": true,
+        "noEmit": true
+    },
+    "include": [
+        "./**/*.ts"
+    ],
+    "exclude": [
+        "node_modules"
+    ]
+}
