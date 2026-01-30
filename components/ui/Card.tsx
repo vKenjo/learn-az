@@ -1,4 +1,4 @@
-import clsx from 'clsx';
+import { clsx } from 'clsx';
 import { forwardRef } from 'react';
 import { View, ViewProps } from 'react-native';
 
@@ -22,3 +22,5 @@ export const Card = forwardRef<View, CardProps>(({ className, variant = 'default
         </View>
     );
 });
+
+Card.displayName = 'Card';

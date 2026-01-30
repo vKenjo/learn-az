@@ -1,7 +1,7 @@
 import { Card } from '@/components/ui/Card';
 import { COLORS } from '@/constants/theme';
 import { Ionicons } from '@expo/vector-icons';
-import clsx from 'clsx';
+import { clsx } from 'clsx';
 import { Text, TouchableOpacity, View } from 'react-native';
 
 interface Props {
@@ -13,7 +13,6 @@ interface Props {
 
 export function SingleChoice({ question, selectedOption, onSelectOption, showFeedback }: Props) {
     const content = question.content;
-    const isCorrect = selectedOption === content.correctIndex;
 
     return (
         <View className="space-y-4">

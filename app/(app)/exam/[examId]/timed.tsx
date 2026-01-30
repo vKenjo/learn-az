@@ -61,7 +61,7 @@ export default function TimedExamMode() {
         }, 1000);
 
         return () => clearInterval(timer);
-    }, [sessionId, isSetup]);
+    }, [sessionId, isSetup, handleFinish]);
 
     const handleStart = () => {
         setIsSetup(false);

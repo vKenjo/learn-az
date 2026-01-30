@@ -1,6 +1,6 @@
-import clsx from 'clsx';
+import { clsx } from 'clsx';
 import { forwardRef } from 'react';
-import { ActivityIndicator, Pressable, PressableProps, Text } from 'react-native';
+import { ActivityIndicator, Pressable, PressableProps, Text, View } from 'react-native';
 
 interface ButtonProps extends PressableProps {
     title?: string;
@@ -24,38 +24,66 @@ export const Button = forwardRef<any, ButtonProps>(({
     disabled,
     ...props
 }, ref) => {
-    const baseStyles = "flex-row items-center justify-center rounded-xl active:opacity-80";
-
-    const variants = {
-        primary: "bg-gradient-to-r from-pink-hot to-purple-vivid border border-transparent",
-        secondary: "bg-blue-DEFAULT",
-        outline: "border border-blue-light bg-transparent",
-        ghost: "bg-transparent",
-    };
-
-    // Note: We'll use style prop for gradients if nativewind doesn't support linear-gradient directly nicely without extra config
-    // For now assuming we can style standard colors, and we might need a LinearGradient component for the actual gradient.
-    // Given the constraints, let's stick to solid colors map to the theme closely or use a specific implementation later.
-    // Re-mapping primary to a solid color for now to ensure it works, or use a complex background.
-
-    const variantStyles = {
-        primary: "bg-pink-hot", // Fallback if gradient not available
-        secondary: "bg-bg-tertiary border border-white/10",
-        outline: "border border-blue-DEFAULT",
-        ghost: "bg-transparent",
-    };
+    const baseStyles = "flex-row items-center justify-center rounded-2xl overflow-hidden";
 
     const sizes = {
-        sm: "px-4 py-2",
-        md: "px-6 py-3",
-        lg: "px-8 py-4",
+        sm: "h-10 px-4",
+        md: "h-13 px-6",
+        lg: "h-14 px-8",
     };
 
     const textSizes = {
-        sm: "text-sm",
-        md: "text-base",
-        lg: "text-lg font-semibold",
+        sm: "text-sm font-semibold",
+        md: "text-base font-semibold",
+        lg: "text-lg font-bold",
     };
+
+    const variantStyles = {
+        primary: "",
+        secondary: "bg-bg-secondary border border-white/10",
+        outline: "border border-pink-hot/60 bg-pink-hot/5",
+        ghost: "bg-transparent",
+    };
+
+    const content = (
+        <>
+            {loading ? (
+                <ActivityIndicator color="white" />
+            ) : (
+                <>
+                    {icon && <View className="mr-2">{icon}</View>}
+                    {title ? (
+                        <Text className={clsx(
+                            "text-white tracking-wide",
+                            textSizes[size],
+                            variant === 'outline' && "text-pink-hot",
+                            textClassName,
+                        )}>
+                            {title}
+                        </Text>
+                    ) : children}
+                </>
+            )}
+        </>
+    );
+
+    if (variant === 'primary' && !disabled) {
+        return (
+            <Pressable
+                ref={ref}
+                className={clsx(baseStyles, sizes[size], className, "bg-pink-hot shadow-xl shadow-pink-hot/30")}
+                style={({ pressed }) => ({
+                    opacity: pressed ? 0.9 : 1,
+                    transform: [{ scale: pressed ? 0.97 : 1 }],
+                })}
+                disabled={loading}
+                {...props}
+            >
+                <View className="absolute top-0 left-0 right-0 h-1/2 bg-white/10" />
+                {content}
+            </Pressable>
+        );
+    }
 
     return (
         <Pressable
@@ -64,24 +92,19 @@ export const Button = forwardRef<any, ButtonProps>(({
                 baseStyles,
                 variantStyles[variant],
                 sizes[size],
-                disabled && "opacity-50",
+                disabled && "opacity-40",
                 className
             )}
+            style={({ pressed }) => ({
+                opacity: pressed ? 0.7 : disabled ? 0.4 : 1,
+                transform: [{ scale: (pressed && !disabled) ? 0.98 : 1 }],
+            })}
             disabled={disabled || loading}
             {...props}
         >
-            {loading ? (
-                <ActivityIndicator color="white" />
-            ) : (
-                <>
-                    {icon && <span className="mr-2">{icon}</span>}
-                    {title ? (
-                        <Text className={clsx("text-white font-medium", textSizes[size], textClassName)}>
-                            {title}
-                        </Text>
-                    ) : children}
-                </>
-            )}
+            {content}
         </Pressable>
     );
 });
+
+Button.displayName = 'Button';

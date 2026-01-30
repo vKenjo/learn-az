@@ -11,7 +11,7 @@ export default function Results() {
     const router = useRouter();
     // In a real flow, we'd pass the sessionId and fetch the specific result
     // For demo, we'll just show a generic "Good Job" or mock data
-    const { score, passed } = useLocalSearchParams();
+    const { score } = useLocalSearchParams();
 
     // Mock data if params missing
     const resultScore = score ? Number(score) : 750;

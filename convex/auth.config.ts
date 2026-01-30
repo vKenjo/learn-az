@@ -1,8 +1,8 @@
 export default {
-    providers: [
-        {
-            domain: process.env.SITE_URL,
-            applicationID: "convex",
-        },
-    ],
+  providers: [
+    {
+      domain: "https://youthful-anaconda-63.convex.site",
+      applicationID: "convex",
+    },
+  ],
 };

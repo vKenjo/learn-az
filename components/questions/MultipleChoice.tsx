@@ -1,7 +1,7 @@
 import { Card } from '@/components/ui/Card';
 import { COLORS } from '@/constants/theme';
 import { Ionicons } from '@expo/vector-icons';
-import clsx from 'clsx';
+import { clsx } from 'clsx';
 import { Text, TouchableOpacity, View } from 'react-native';
 
 interface Props {

@@ -1,5 +1,86 @@
+import { v } from "convex/values";
 import { query } from "./_generated/server";
 import { auth } from "./auth";
+
+// Get dashboard stats for the current user
+export const getDashboardStats = query({
+    args: {
+        examCode: v.optional(v.union(
+            v.literal("AZ-900"),
+            v.literal("AZ-104"),
+            v.literal("AZ-305"),
+        )),
+    },
+    handler: async (ctx, args) => {
+        const userId = await auth.getUserId(ctx);
+        if (!userId) return null;
+
+        const profile = await ctx.db
+            .query("userProfiles")
+            .withIndex("by_user_id", (q) => q.eq("userId", userId))
+            .unique();
+
+        if (!profile) return null;
+
+        const examCode = args.examCode || profile.selectedExam || "AZ-900";
+
+        const progress = await ctx.db
+            .query("userProgress")
+            .withIndex("by_user_exam", (q) =>
+                q.eq("userId", userId).eq("examCode", examCode as "AZ-900" | "AZ-104" | "AZ-305")
+            )
+            .unique();
+
+        const today = new Date().toISOString().split("T")[0];
+        const todayActivity = await ctx.db
+            .query("dailyActivity")
+            .withIndex("by_user_date", (q) =>
+                q.eq("userId", userId).eq("date", today)
+            )
+            .unique();
+
+        const recentSessions = await ctx.db
+            .query("examSessions")
+            .withIndex("by_user_exam", (q) =>
+                q.eq("userId", userId).eq("examCode", examCode as "AZ-900" | "AZ-104" | "AZ-305")
+            )
+            .order("desc")
+            .take(20);
+
+        const completedSessions = recentSessions
+            .filter((s) => s.status === "completed")
+            .slice(0, 5);
+
+        const totalAttempted = progress?.totalQuestionsAttempted || 0;
+        const totalCorrect = progress?.totalCorrect || 0;
+        const correctRate = totalAttempted > 0 ? totalCorrect / totalAttempted : 0;
+        const coverage = Math.min(totalAttempted / 200, 1);
+        const readiness = Math.min(100, Math.round(correctRate * coverage * 100));
+
+        return {
+            profile,
+            examCode,
+            streak: {
+                current: profile.currentStreak,
+                longest: profile.longestStreak,
+            },
+            todayProgress: {
+                questions: todayActivity?.questionsAnswered || 0,
+                goal: profile.dailyGoal || 20,
+                accuracy: todayActivity
+                    ? todayActivity.correctAnswers / Math.max(todayActivity.questionsAnswered, 1)
+                    : 0,
+            },
+            overallProgress: {
+                questionsAttempted: totalAttempted,
+                correctRate,
+                estimatedReadiness: readiness,
+            },
+            domainBreakdown: progress?.domainStats || {},
+            recentSessions: completedSessions,
+        };
+    },
+});
 
 // Get weekly activity for the current user
 export const getWeeklyActivity = query({

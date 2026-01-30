@@ -30,7 +30,7 @@ export const Skeleton = ({ width, height, borderRadius = 8, style, className = "
         pulse.start();
 
         return () => pulse.stop();
-    }, []);
+    }, [opacity]);
 
     return (
         <Animated.View

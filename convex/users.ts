@@ -1,12 +1,12 @@
+import { getAuthUserId } from "@convex-dev/auth/server";
 import { v } from "convex/values";
 import { internalMutation, mutation, query } from "./_generated/server";
-import { auth } from "./auth";
 
 // Get current authenticated user with profile
 export const currentUser = query({
     args: {},
     handler: async (ctx) => {
-        const userId = await auth.getUserId(ctx);
+        const userId = await getAuthUserId(ctx);
         if (!userId) return null;
 
         const user = await ctx.db.get(userId);
@@ -30,7 +30,7 @@ export const upsertProfile = mutation({
         )),
     },
     handler: async (ctx, args) => {
-        const userId = await auth.getUserId(ctx);
+        const userId = await getAuthUserId(ctx);
         if (!userId) throw new Error("Not authenticated");
 
         const existing = await ctx.db
@@ -88,7 +88,7 @@ export const createProfileOnSignUp = internalMutation({
 export const updateStreak = mutation({
     args: {},
     handler: async (ctx) => {
-        const userId = await auth.getUserId(ctx);
+        const userId = await getAuthUserId(ctx);
         if (!userId) return null;
 
         const profile = await ctx.db

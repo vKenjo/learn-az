@@ -58,7 +58,7 @@ export default function MockExamMode() {
         }, 1000);
 
         return () => clearInterval(timer);
-    }, [sessionId]);
+    }, [sessionId, handleFinish]);
 
     // Start Session
     useEffect(() => {

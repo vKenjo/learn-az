@@ -6,38 +6,41 @@ module.exports = {
         extend: {
             colors: {
                 pink: {
-                    hot: '#f72585',
-                    deep: '#b5179e',
+                    hot: '#ff006e',
+                    deep: '#c9184a',
                 },
                 purple: {
-                    vivid: '#7209b7',
-                    dark: '#560bad',
-                },
-                indigo: {
-                    deep: '#480ca8',
-                    DEFAULT: '#3a0ca3',
+                    vivid: '#8338ec',
+                    dark: '#3c096c',
                 },
                 blue: {
-                    vivid: '#3f37c9',
+                    vivid: '#3a86ff',
                     DEFAULT: '#4361ee',
-                    light: '#4895ef',
+                    light: '#4cc9f0',
                 },
-                cyan: '#4cc9f0',
+                cyan: '#00f5d4',
                 bg: {
-                    primary: '#0a0a0f',
-                    secondary: '#12121a',
-                    tertiary: '#1a1a2e',
+                    primary: '#050508',
+                    secondary: '#0f0f1a',
+                    tertiary: '#161625',
                 },
                 text: {
                     primary: '#ffffff',
-                    secondary: 'rgba(255,255,255,0.7)',
-                    muted: 'rgba(255,255,255,0.4)',
+                    secondary: 'rgba(255,255,255,0.85)',
+                    muted: 'rgba(255,255,255,0.5)',
                 }
             },
+            borderRadius: {
+                '4xl': '32px',
+                '5xl': '40px',
+            },
+            spacing: {
+                '18': '72px',
+            },
             fontFamily: {
-                display: ['Space Grotesk', 'System'],
-                body: ['Inter', 'System'],
-                mono: ['JetBrains Mono', 'System'],
+                display: ['System'],
+                body: ['System'],
+                mono: ['System'],
             }
         },
     },

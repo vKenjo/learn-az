@@ -1,10 +1,14 @@
 import { useAuthActions } from "@convex-dev/auth/react";
-import { useQuery } from "convex/react";
+import { useConvexAuth, useQuery } from "convex/react";
 import { api } from "../convex/_generated/api";
 
 export function useAuth() {
     const { signIn, signOut } = useAuthActions();
-    const user = useQuery(api.users.currentUser);
+    const { isAuthenticated, isLoading } = useConvexAuth();
+    const user = useQuery(
+        api.users.currentUser,
+        isAuthenticated ? {} : "skip",
+    );
 
     const handleSignIn = async (email: string, password: string) => {
         await signIn("password", { email, password, flow: "signIn" });
@@ -20,7 +24,8 @@ export function useAuth() {
 
     return {
         user,
-        isAuthenticated: !!user,
+        isAuthenticated,
+        isLoading,
         signIn: handleSignIn,
         signUp: handleSignUp,
         signOut: handleSignOut,
