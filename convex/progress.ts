@@ -1,6 +1,6 @@
+import { getAuthUserId } from "@convex-dev/auth/server";
 import { v } from "convex/values";
 import { query } from "./_generated/server";
-import { auth } from "./auth";
 
 // Get dashboard stats for the current user
 export const getDashboardStats = query({
@@ -12,7 +12,7 @@ export const getDashboardStats = query({
         )),
     },
     handler: async (ctx, args) => {
-        const userId = await auth.getUserId(ctx);
+        const userId = await getAuthUserId(ctx);
         if (!userId) return null;
 
         const profile = await ctx.db
@@ -86,7 +86,7 @@ export const getDashboardStats = query({
 export const getWeeklyActivity = query({
     args: {},
     handler: async (ctx) => {
-        const userId = await auth.getUserId(ctx);
+        const userId = await getAuthUserId(ctx);
         if (!userId) return [];
 
         // Define last 7 days range
@@ -128,7 +128,7 @@ export const getWeeklyActivity = query({
 export const getWeakAreas = query({
     args: {},
     handler: async (ctx) => {
-        const userId = await auth.getUserId(ctx);
+        const userId = await getAuthUserId(ctx);
         if (!userId) return [];
 
         // Fetch all user responses

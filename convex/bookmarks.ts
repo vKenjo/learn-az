@@ -1,12 +1,12 @@
+import { getAuthUserId } from "@convex-dev/auth/server";
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
-import { auth } from "./auth";
 
 // Toggle bookmark for a question
 export const toggleBookmark = mutation({
     args: { questionId: v.id("questions") },
     handler: async (ctx, args) => {
-        const userId = await auth.getUserId(ctx);
+        const userId = await getAuthUserId(ctx);
         if (!userId) throw new Error("Not authenticated");
 
         const existing = await ctx.db
@@ -33,7 +33,7 @@ export const toggleBookmark = mutation({
 export const getBookmarks = query({
     args: {},
     handler: async (ctx) => {
-        const userId = await auth.getUserId(ctx);
+        const userId = await getAuthUserId(ctx);
         if (!userId) return [];
 
         const bookmarks = await ctx.db
@@ -61,7 +61,7 @@ export const getBookmarks = query({
 export const isBookmarked = query({
     args: { questionId: v.id("questions") },
     handler: async (ctx, args) => {
-        const userId = await auth.getUserId(ctx);
+        const userId = await getAuthUserId(ctx);
         if (!userId) return false;
 
         const existing = await ctx.db

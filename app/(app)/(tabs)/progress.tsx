@@ -28,7 +28,7 @@ export default function Progress() {
         );
     }
 
-    const { todayProgress, overallProgress, streak } = stats;
+    const { overallProgress, streak } = stats;
 
     const statCards = [
         { icon: 'flame' as const, value: streak.current, label: 'Day Streak', color: '#f72585' },

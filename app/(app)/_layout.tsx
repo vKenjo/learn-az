@@ -18,11 +18,8 @@ export default function AppLayout() {
     }
 
     return (
-        <Stack>
-            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-            <Stack.Screen name="exam" options={{ headerShown: false }} />
-            <Stack.Screen name="question" options={{ headerShown: false }} />
-            <Stack.Screen name="results" options={{ headerShown: false }} />
+        <Stack screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="(tabs)" />
         </Stack>
     );
 }

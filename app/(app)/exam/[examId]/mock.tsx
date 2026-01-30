@@ -6,7 +6,7 @@ import { api } from '@/convex/_generated/api';
 import { Ionicons } from '@expo/vector-icons';
 import { useMutation } from 'convex/react';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -42,6 +42,68 @@ export default function MockExamMode() {
     const currentQuestion = MOCK_QUESTION;
     const totalQuestions = 40; // Mock exam standard
 
+    const formatTime = (seconds: number) => {
+        const mins = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        return `${mins}:${secs.toString().padStart(2, '0')}`;
+    };
+
+    const handleSelectAnswer = (answer: any) => {
+        setAnswers(prev => ({ ...prev, [currentQuestionIndex]: answer }));
+
+        // In mock mode, we silently submit so progress is saved
+        // Skip submission for mock questions (mock IDs aren't valid Convex IDs)
+        if (sessionId && !currentQuestion._id.startsWith("mock")) {
+            submitAnswer({
+                sessionId,
+                questionId: currentQuestion._id as any,
+                userAnswer: answer,
+                timeSpentSeconds: 0,
+            });
+        }
+    };
+
+    const handleNext = () => {
+        if (currentQuestionIndex < totalQuestions - 1) {
+            setCurrentQuestionIndex(prev => prev + 1);
+        }
+    };
+
+    const handlePrev = () => {
+        setCurrentQuestionIndex(prev => Math.max(0, prev - 1));
+    };
+
+    const handleFinish = useCallback(async () => {
+        if (isSubmitting) return;
+
+        Alert.alert(
+            "Submit Exam",
+            "Are you sure you want to finish?",
+            [
+                { text: "Cancel", style: "cancel" },
+                {
+                    text: "Submit",
+                    style: "destructive",
+                    onPress: async () => {
+                        setIsSubmitting(true);
+                        try {
+                            if (sessionId) {
+                                await completeSession({ sessionId });
+                                router.replace({
+                                    pathname: "/(app)/results",
+                                    params: { sessionId }
+                                });
+                            }
+                        } catch (error: any) {
+                            Alert.alert("Error", error.message);
+                            setIsSubmitting(false);
+                        }
+                    }
+                }
+            ]
+        );
+    }, [isSubmitting, sessionId, completeSession, router]);
+
     // Timer
     useEffect(() => {
         if (!sessionId) return;
@@ -72,69 +134,7 @@ export default function MockExamMode() {
                 setSessionId(id);
             }).catch(err => Alert.alert("Error", err.message));
         }
-    }, [examId]);
-
-    const formatTime = (seconds: number) => {
-        const mins = Math.floor(seconds / 60);
-        const secs = seconds % 60;
-        return `${mins}:${secs.toString().padStart(2, '0')}`;
-    };
-
-    const handleSelectAnswer = (answer: any) => {
-        setAnswers(prev => ({ ...prev, [currentQuestionIndex]: answer }));
-
-        // In mock mode, we silently submit or just store local
-        // For robustness, let's submit silently so progress is saved
-        if (sessionId) {
-            submitAnswer({
-                sessionId,
-                questionId: currentQuestion._id as any,
-                userAnswer: answer,
-                timeSpentSeconds: 0, // We could track per question but for now 0
-            });
-        }
-    };
-
-    const handleNext = () => {
-        if (currentQuestionIndex < totalQuestions - 1) {
-            setCurrentQuestionIndex(prev => prev + 1);
-        }
-    };
-
-    const handlePrev = () => {
-        setCurrentQuestionIndex(prev => Math.max(0, prev - 1));
-    };
-
-    const handleFinish = async () => {
-        if (isSubmitting) return;
-
-        Alert.alert(
-            "Submit Exam",
-            "Are you sure you want to finish?",
-            [
-                { text: "Cancel", style: "cancel" },
-                {
-                    text: "Submit",
-                    style: "destructive",
-                    onPress: async () => {
-                        setIsSubmitting(true);
-                        try {
-                            if (sessionId) {
-                                await completeSession({ sessionId });
-                                router.replace({
-                                    pathname: "/(app)/results",
-                                    params: { sessionId }
-                                });
-                            }
-                        } catch (error: any) {
-                            Alert.alert("Error", error.message);
-                            setIsSubmitting(false);
-                        }
-                    }
-                }
-            ]
-        );
-    };
+    }, [examId, sessionId, startSession]);
 
     if (!sessionId) {
         return (

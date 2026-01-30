@@ -38,7 +38,7 @@ export default function SignInScreen() {
 
                     <View className="mt-12">
                         <View className="flex-row justify-center items-center">
-                            <Text className="text-text-muted text-base">Don't have an account? </Text>
+                            <Text className="text-text-muted text-base">{"Don't have an account? "}</Text>
                             <Link href="/(auth)/sign-up" asChild>
                                 <TouchableOpacity hitSlop={20}>
                                     <Text className="text-pink-hot font-bold text-base">Get Started</Text>

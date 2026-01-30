@@ -1,12 +1,12 @@
+import { getAuthUserId } from "@convex-dev/auth/server";
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
-import { auth } from "./auth";
 
 // Get session details
 export const getSession = query({
     args: { sessionId: v.id("examSessions") },
     handler: async (ctx, args) => {
-        const userId = await auth.getUserId(ctx);
+        const userId = await getAuthUserId(ctx);
         if (!userId) throw new Error("Not authenticated");
 
         const session = await ctx.db.get(args.sessionId);
@@ -28,7 +28,7 @@ export const startSession = mutation({
         domainFilter: v.optional(v.array(v.string())),
     },
     handler: async (ctx, args) => {
-        const userId = await auth.getUserId(ctx);
+        const userId = await getAuthUserId(ctx);
         if (!userId) throw new Error("Not authenticated");
 
         // Get questions for this session
@@ -75,7 +75,7 @@ export const submitAnswer = mutation({
         isFlagged: v.optional(v.boolean()),
     },
     handler: async (ctx, args) => {
-        const userId = await auth.getUserId(ctx);
+        const userId = await getAuthUserId(ctx);
         if (!userId) throw new Error("Not authenticated");
 
         // Validate session belongs to user
@@ -149,7 +149,7 @@ export const completeSession = mutation({
         sessionId: v.id("examSessions"),
     },
     handler: async (ctx, args) => {
-        const userId = await auth.getUserId(ctx);
+        const userId = await getAuthUserId(ctx);
         if (!userId) throw new Error("Not authenticated");
 
         const session = await ctx.db.get(args.sessionId);

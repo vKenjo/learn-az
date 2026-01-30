@@ -37,23 +37,18 @@ export default function LearnMode() {
 
     // API
     const startSession = useMutation(api.exams.startSession);
-    const submitAnswer = useMutation(api.exams.submitAnswer);
     const toggleBookmark = useMutation(api.bookmarks.toggleBookmark);
 
-    // We need to know the question ID for the hook, but if currentQuestion is not yet ready, we pass "skip" or null check inside.
+    // Skip bookmark query when using mock data (mock IDs aren't valid Convex IDs)
     const currentQuestionId = (currentQuestion as any)._id;
-    const isBookmarked = useQuery(api.bookmarks.isBookmarked, { questionId: currentQuestionId });
+    const isMockQuestion = currentQuestionId?.startsWith("mock");
+    const isBookmarked = useQuery(api.bookmarks.isBookmarked, isMockQuestion ? "skip" : { questionId: currentQuestionId });
 
     // Helper to load session questions (in real app, we'd query questions by session)
     // But for now, we rely on the session creation to give us IDs, 
     // and we might need to fetch the question content one by one or batch.
     // The schema stores questionIds in examSessions.
     // Let's create a helper query to fetch the current question.
-
-    // Temporarily, let's fetch ALL questions for the session or fetch one by one.
-    // We'll assume we can fetch the current question by ID.
-    // First, we need to get the session details to know the question IDs.
-    const session = useQuery(api.exams.getSession, sessionId ? { sessionId } : "skip");
 
     useEffect(() => {
         if (examId && !sessionId) {
@@ -153,7 +148,7 @@ export default function LearnMode() {
                 onNext={handleNext}
                 canPrevious={currentQuestionIndex > 0}
                 canNext={currentQuestionIndex < totalQuestions - 1}
-                onToggleBookmark={() => toggleBookmark({ questionId: currentQuestion._id as any })}
+                onToggleBookmark={() => { if (!isMockQuestion) toggleBookmark({ questionId: currentQuestion._id as any }); }}
                 isBookmarked={!!isBookmarked}
             />
         </SafeAreaView>

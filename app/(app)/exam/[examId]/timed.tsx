@@ -6,7 +6,7 @@ import { api } from '@/convex/_generated/api';
 import { Ionicons } from '@expo/vector-icons';
 import { useMutation } from 'convex/react';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -45,6 +45,73 @@ export default function TimedExamMode() {
 
     const currentQuestion = MOCK_QUESTION;
 
+    const formatTime = (seconds: number) => {
+        const mins = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        return `${mins}:${secs.toString().padStart(2, '0')}`;
+    };
+
+    const handleSelectAnswer = (answer: any) => {
+        setAnswers(prev => ({ ...prev, [currentQuestionIndex]: answer }));
+        // Skip submission for mock questions (mock IDs aren't valid Convex IDs)
+        if (sessionId && !currentQuestion._id.startsWith("mock")) {
+            submitAnswer({
+                sessionId,
+                questionId: currentQuestion._id as any,
+                userAnswer: answer,
+                timeSpentSeconds: 0,
+            });
+        }
+    };
+
+    const handleNext = () => {
+        if (currentQuestionIndex < selectedCount - 1) {
+            setCurrentQuestionIndex(prev => prev + 1);
+        }
+    };
+
+    const handlePrev = () => {
+        setCurrentQuestionIndex(prev => Math.max(0, prev - 1));
+    };
+
+    const performSubmit = useCallback(async () => {
+        setIsSubmitting(true);
+        try {
+            if (sessionId) {
+                await completeSession({ sessionId });
+                router.replace({
+                    pathname: "/(app)/results",
+                    params: { sessionId }
+                });
+            }
+        } catch (error: any) {
+            Alert.alert("Error", error.message);
+            setIsSubmitting(false);
+        }
+    }, [sessionId, completeSession, router]);
+
+    const handleFinish = useCallback(async () => {
+        if (isSubmitting) return;
+
+        // Confirm if not auto-submit (time > 0)
+        if (timeLeft > 0) {
+            Alert.alert(
+                "Submit Exam",
+                "Are you sure you want to finish?",
+                [
+                    { text: "Cancel", style: "cancel" },
+                    {
+                        text: "Submit",
+                        style: "destructive",
+                        onPress: performSubmit
+                    }
+                ]
+            );
+        } else {
+            performSubmit();
+        }
+    }, [isSubmitting, timeLeft, performSubmit]);
+
     // Timer
     useEffect(() => {
         if (!sessionId || isSetup) return;
@@ -78,72 +145,6 @@ export default function TimedExamMode() {
             Alert.alert("Error", err.message);
             setIsSetup(true); // Go back to setup on error
         });
-    };
-
-    const formatTime = (seconds: number) => {
-        const mins = Math.floor(seconds / 60);
-        const secs = seconds % 60;
-        return `${mins}:${secs.toString().padStart(2, '0')}`;
-    };
-
-    const handleSelectAnswer = (answer: any) => {
-        setAnswers(prev => ({ ...prev, [currentQuestionIndex]: answer }));
-        if (sessionId) {
-            submitAnswer({
-                sessionId,
-                questionId: currentQuestion._id as any,
-                userAnswer: answer,
-                timeSpentSeconds: 0,
-            });
-        }
-    };
-
-    const handleNext = () => {
-        if (currentQuestionIndex < selectedCount - 1) {
-            setCurrentQuestionIndex(prev => prev + 1);
-        }
-    };
-
-    const handlePrev = () => {
-        setCurrentQuestionIndex(prev => Math.max(0, prev - 1));
-    };
-
-    const handleFinish = async () => {
-        if (isSubmitting) return;
-
-        // Confirm if not auto-submit (time > 0)
-        if (timeLeft > 0) {
-            Alert.alert(
-                "Submit Exam",
-                "Are you sure you want to finish?",
-                [
-                    { text: "Cancel", style: "cancel" },
-                    {
-                        text: "Submit",
-                        style: "destructive",
-                        onPress: performSubmit
-                    }
-                ]
-            );
-        } else {
-            performSubmit();
-        }
-    };
-
-    const performSubmit = async () => {
-        setIsSubmitting(true);
-        try {
-            if (sessionId) {
-                await completeSession({ sessionId });
-                router.replace({
-                    pathname: "/(app)/results",
-                    params: { sessionId }
-                });
-            }
-        } catch (error: any) {
-            Alert.alert("Error", error.message);
-            setIsSubmitting(false);
-        }
     };
 
     // SETUP SCREEN
